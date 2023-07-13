@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.annotations.Test;
 
+import java.util.List;
+import java.util.Objects;
+
 public class ReproducerTest extends BottleRocketTest {
     private Datastore datastore;
 
@@ -34,7 +37,25 @@ public class ReproducerTest extends BottleRocketTest {
     }
 
     @Test
-    public void reproduce() {
+    public void brokenSaveWithList() {
+        var entity = new MapWithListBugged();
+        entity.map = new MapWithListBugged.MyHashMap<>();
+        entity.map.put("key", List.of(1, 2, 3));
+        datastore.insert(entity);
+        var saved = datastore.find(MapWithListBugged.class).first();
+        assert saved != null;
+        assert Objects.equals(entity.map.get("key"), saved.map.get("key"));
+    }
+
+    @Test
+    public void brokenReadWithAnything() {
+        var entity = new MapWithAnythingBugged();
+        entity.map = new MapWithAnythingBugged.MyHashMap<>();
+        entity.map.put("key", 1);
+        datastore.insert(entity);
+        var saved = datastore.find(MapWithAnythingBugged.class).first();
+        assert saved != null;
+        assert Objects.equals(entity.map.get("key"), saved.map.get("key"));
     }
 
 }
